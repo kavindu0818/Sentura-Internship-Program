@@ -91,9 +91,7 @@ public class UserService {
  
     private String executeRequest(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Error: " + response.code() + " - " + response.message());
-            }
+        
             return response.body().string();
         }
     }
