@@ -1,6 +1,8 @@
 package com.example.Sentura_Internship_Program.service;
 
 import okhttp3.*;
+
+import org.apache.coyote.Request;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,7 @@ public class UserService {
         this.apiUrl = apiUrl;
     }
 
-    // Create a new user
+
     public String createUser(String username, String email, String firstName, String lastName) throws IOException {
         JSONObject userJson = new JSONObject();
         userJson.put("username", username);
@@ -35,7 +37,7 @@ public class UserService {
         return executeRequest(request);
     }
 
-    // Get list of users
+  
     public String listUsers(int page, int pageSize) throws IOException {
         HttpUrl url = HttpUrl.parse(apiUrl + "/users")
                 .newBuilder()
@@ -52,7 +54,7 @@ public class UserService {
         return executeRequest(request);
     }
 
-    // Get user details
+
     public String getUserDetails(String userId) throws IOException {
         Request request = new Request.Builder()
             .url(apiUrl + "/users/" + userId)
@@ -63,7 +65,7 @@ public class UserService {
         return executeRequest(request);
     }
 
-    // Update user
+
     public String updateUser(String userId, String jsonData) throws IOException {
         RequestBody body = RequestBody.create(jsonData, MediaType.get("application/json"));
 
@@ -76,7 +78,7 @@ public class UserService {
         return executeRequest(request);
     }
 
-    // Delete user
+  
     public String deleteUser(String userId) throws IOException {
         Request request = new Request.Builder()
             .url(apiUrl + "/users/" + userId)
@@ -86,7 +88,7 @@ public class UserService {
         return executeRequest(request);
     }
 
-    // Helper method to execute requests
+ 
     private String executeRequest(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
