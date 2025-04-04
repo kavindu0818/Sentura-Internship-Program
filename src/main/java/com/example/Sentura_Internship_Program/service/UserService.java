@@ -1,14 +1,9 @@
 package com.example.Sentura_Internship_Program.service;
 
 import okhttp3.*;
-
-import org.apache.tomcat.util.http.parser.MediaType;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import jakarta.security.auth.message.callback.PrivateKeyCallback.Request;
-
 import java.io.IOException;
 
 @Service
@@ -28,94 +23,76 @@ public class UserService {
         userJson.put("email", email);
         userJson.put("first_name", firstName);
         userJson.put("last_name", lastName);
-        
-        RequestBody body = RequestBody.create(
-            MediaType.parse("application/json"),
-            userJson.toString()
-        );
-        
+
+        RequestBody body = RequestBody.create(userJson.toString(), MediaType.get("application/json"));
+
         Request request = new Request.Builder()
-            .url(apiUrl + "/api/users")
+            .url(apiUrl + "/users")
             .addHeader("Content-Type", "application/json")
             .post(body)
             .build();
-            
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected response code: " + response.code());
-            }
-            return response.body().string();
-        }
+
+        return executeRequest(request);
     }
-    
+
     // Get list of users
     public String listUsers(int page, int pageSize) throws IOException {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(apiUrl + "/api/users").newBuilder();
-        urlBuilder.addQueryParameter("page", String.valueOf(page));
-        urlBuilder.addQueryParameter("page_size", String.valueOf(pageSize));
-        
+        HttpUrl url = HttpUrl.parse(apiUrl + "/users")
+                .newBuilder()
+                .addQueryParameter("page", String.valueOf(page))
+                .addQueryParameter("page_size", String.valueOf(pageSize))
+                .build();
+
         Request request = new Request.Builder()
-            .url(urlBuilder.build())
+            .url(url)
+            .addHeader("Content-Type", "application/json")
             .get()
             .build();
-            
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected response code: " + response.code());
-            }
-            return response.body().string();
-        }
+
+        return executeRequest(request);
     }
-    
+
     // Get user details
     public String getUserDetails(String userId) throws IOException {
         Request request = new Request.Builder()
-            .url(apiUrl + "/api/users/" + userId)
+            .url(apiUrl + "/users/" + userId)
+            .addHeader("Content-Type", "application/json")
             .get()
             .build();
-            
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected response code: " + response.code());
-            }
-            return response.body().string();
-        }
+
+        return executeRequest(request);
     }
-    
+
     // Update user
     public String updateUser(String userId, String jsonData) throws IOException {
-        RequestBody body = RequestBody.create(
-            MediaType.parse("application/json"),
-            jsonData
-        );
-        
+        RequestBody body = RequestBody.create(jsonData, MediaType.get("application/json"));
+
         Request request = new Request.Builder()
-            .url(apiUrl + "/api/users/" + userId)
+            .url(apiUrl + "/users/" + userId)
             .addHeader("Content-Type", "application/json")
             .patch(body)
             .build();
-            
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected response code: " + response.code());
-            }
-            return response.body().string();
-        }
+
+        return executeRequest(request);
     }
-    
+
     // Delete user
     public String deleteUser(String userId) throws IOException {
         Request request = new Request.Builder()
-            .url(apiUrl + "/api/users/" + userId)
+            .url(apiUrl + "/users/" + userId)
             .delete()
             .build();
-            
+
+        return executeRequest(request);
+    }
+
+    // Helper method to execute requests
+    private String executeRequest(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful() && response.code() != 204) {
-                throw new IOException("Unexpected response code: " + response.code());
+            if (!response.isSuccessful()) {
+                throw new IOException("Error: " + response.code() + " - " + response.message());
             }
-            String responseBody = response.body() != null ? response.body().string() : "";
-            return responseBody.isEmpty() ? "{\"success\": true, \"message\": \"User deleted successfully\"}" : responseBody;
+            return response.body().string();
         }
     }
 }
